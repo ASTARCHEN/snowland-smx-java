@@ -5,15 +5,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ltd.snowland.utils.StreamTool;
 import ltd.snowland.security.utils.SM4Base;
 import ltd.snowland.security.utils.SM4_Context;
 import ltd.snowland.utils.NumberTool;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+import ltd.snowland.utils.StreamTool;
+
 
 public class SM4 {
 	
@@ -69,7 +69,7 @@ public class SM4 {
 
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_dec(ctx, keyBytes);
-			byte[] decrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, new BASE64Decoder().decodeBuffer(cipherText));
+			byte[] decrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, Base64.getDecoder().decode(cipherText));
 			return new String(decrypted, charset);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -95,7 +95,7 @@ public class SM4 {
 
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_dec(ctx, keyBytes);
-			return sm4.sm4_crypt_cbc(ctx, ivBytes, new BASE64Decoder().decodeBuffer(cipherText));
+			return sm4.sm4_crypt_cbc(ctx, ivBytes, Base64.getDecoder().decode(cipherText));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -166,7 +166,7 @@ public class SM4 {
 
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_dec(ctx, keyBytes);
-			return sm4.sm4_crypt_ecb(ctx, new BASE64Decoder().decodeBuffer(cipherText));
+			return sm4.sm4_crypt_ecb(ctx, Base64.getDecoder().decode(cipherText));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -193,7 +193,7 @@ public class SM4 {
 
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_dec(ctx, keyBytes);
-			byte[] decrypted = sm4.sm4_crypt_ecb(ctx, new BASE64Decoder().decodeBuffer(cipherText));
+			byte[] decrypted = sm4.sm4_crypt_ecb(ctx, Base64.getDecoder().decode(cipherText));
 			return new String(decrypted, charset);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -220,7 +220,7 @@ public class SM4 {
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_enc(ctx, keyBytes);
 			byte[] encrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, bytes);
-			String cipherText = new BASE64Encoder().encode(encrypted);
+			String cipherText = Base64.getEncoder().encodeToString(encrypted);
 			if (cipherText != null && cipherText.trim().length() > 0) {
 				Pattern p = Pattern.compile("\\s*|\t|\r|\n");
 				Matcher m = p.matcher(cipherText);
@@ -255,7 +255,7 @@ public class SM4 {
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_enc(ctx, keyBytes);
 			byte[] encrypted = sm4.sm4_crypt_cbc(ctx, ivBytes, plainText.getBytes(charset));
-			String cipherText = new BASE64Encoder().encode(encrypted);
+			String cipherText = Base64.getEncoder().encodeToString(encrypted);
 			if (cipherText != null && cipherText.trim().length() > 0) {
 				Pattern p = Pattern.compile("\\s*|\t|\r|\n");
 				Matcher m = p.matcher(cipherText);
@@ -370,7 +370,7 @@ public class SM4 {
 			SM4Base sm4 = new SM4Base();
 			sm4.sm4_setkey_enc(ctx, keyBytes);
 			byte[] encrypted = sm4.sm4_crypt_ecb(ctx, plainText.getBytes(charset));
-			String cipherText = new BASE64Encoder().encode(encrypted);
+			String cipherText = Base64.getEncoder().encodeToString(encrypted);
 			if (cipherText != null && cipherText.trim().length() > 0) {
 				Pattern p = Pattern.compile("\\s*|\t|\r|\n");
 				Matcher m = p.matcher(cipherText);

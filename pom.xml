@@ -5,8 +5,9 @@
 	<groupId>ltd.snowland</groupId>
 	<artifactId>utilx4j</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>utilx4j</name>
-
+	<name>${project.groupId}:${project.artifactId}</name>
+   <description></description>
+   <url>https://gitee.com/snowlandltd/utilx4j</url>
 	<dependencies>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
