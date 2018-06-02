@@ -1,6 +1,7 @@
 package ltd.snowland.utils;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class NumberTool {
 	/**
@@ -186,6 +187,12 @@ public class NumberTool {
 	private static final char[] DIGITS_UPPER = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
 			'E', 'F' };
 
+	public static final String[] BIN_String = { 
+			"0000","0001","0010","0011",
+			"0100","0101","0110","0111",
+			"1000","1001","1010","1011",
+			"1100","1101","1110","1111"
+			};
 	/**
 	 * 将字节数组转换为十六进制字符数组
 	 *
@@ -324,14 +331,14 @@ public class NumberTool {
 	 * @return ASCII字符串
 	 */
 	public static String StringToAsciiString(String content) {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		int max = content.length();
 		for (int i = 0; i < max; i++) {
 			char c = content.charAt(i);
 			String b = Integer.toHexString(c);
-			result = result + b;
+			result.append(b);
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**
@@ -344,13 +351,13 @@ public class NumberTool {
 	 * @return 字符串
 	 */
 	public static String hexStringToString(String hexString, int encodeType) {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		int max = hexString.length() / encodeType;
 		for (int i = 0; i < max; i++) {
 			char c = (char) hexStringToAlgorism(hexString.substring(i * encodeType, (i + 1) * encodeType));
-			result += c;
+			result.append(c);
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**
@@ -386,62 +393,11 @@ public class NumberTool {
 	 */
 	public static String hexStringToBinary(String hex) {
 		hex = hex.toUpperCase();
-		String result = "";
-		int max = hex.length();
-		for (int i = 0; i < max; i++) {
-			char c = hex.charAt(i);
-			switch (c) {
-			case '0':
-				result += "0000";
-				break;
-			case '1':
-				result += "0001";
-				break;
-			case '2':
-				result += "0010";
-				break;
-			case '3':
-				result += "0011";
-				break;
-			case '4':
-				result += "0100";
-				break;
-			case '5':
-				result += "0101";
-				break;
-			case '6':
-				result += "0110";
-				break;
-			case '7':
-				result += "0111";
-				break;
-			case '8':
-				result += "1000";
-				break;
-			case '9':
-				result += "1001";
-				break;
-			case 'A':
-				result += "1010";
-				break;
-			case 'B':
-				result += "1011";
-				break;
-			case 'C':
-				result += "1100";
-				break;
-			case 'D':
-				result += "1101";
-				break;
-			case 'E':
-				result += "1110";
-				break;
-			case 'F':
-				result += "1111";
-				break;
-			}
+		StringBuffer sb = new StringBuffer();
+		for (char c: hex.toCharArray()) {
+			sb.append(BIN_String[charToByte(c)]);			
 		}
-		return result;
+		return sb.toString();
 	}
 
 	/**
@@ -491,15 +447,12 @@ public class NumberTool {
 	 * @return String
 	 */
 	public static String byteToString(byte[] bytearray) {
-		String result = "";
-		char temp;
-
+		StringBuilder resultBuffer = new StringBuilder();
 		int length = bytearray.length;
 		for (int i = 0; i < length; i++) {
-			temp = (char) bytearray[i];
-			result += temp;
+			resultBuffer.append(bytearray[i]);
 		}
-		return result;
+		return resultBuffer.toString();
 	}
 
 	/**
@@ -515,7 +468,7 @@ public class NumberTool {
 		for (int i = max; i > 0; i--) {
 			char c = binary.charAt(i - 1);
 			int algorism = c - '0';
-			result += Math.pow(2, max - i) * algorism;
+			result += (1 <<(max - i)) * algorism;
 		}
 		return result;
 	}
@@ -612,7 +565,7 @@ public class NumberTool {
 		for (int i = 0, j = 0, l = hex.length(); i < l; i++, j++) {
 			String swap = "" + arr[i++] + arr[i];
 			int byteint = Integer.parseInt(swap, 16) & 0xFF;
-			b[j] = new Integer(byteint).byteValue();
+			b[j] = ((Integer)(byteint)).byteValue();
 		}
 		return b;
 	}
@@ -642,10 +595,6 @@ public class NumberTool {
 	}
 
 	public static byte[] subByte(byte[] input, int startIndex, int length) {
-		byte[] bt = new byte[length];
-		for (int i = 0; i < length; i++) {
-			bt[i] = input[i + startIndex];
-		}
-		return bt;
+		return Arrays.copyOfRange(input, startIndex, startIndex + length);
 	}
 }
