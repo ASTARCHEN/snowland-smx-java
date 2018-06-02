@@ -226,6 +226,15 @@ public class SM3 {
         return resultSb.toString();
     }
 
+	public static String hashHex(byte[] b) {
+		try {
+			return SM3.byteArrayToHexString(SM3.hash(b));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
     public static void main(String[] args) throws IOException {
         System.out.println(SM3.byteArrayToHexString(SM3.hash("test sm3 hash".getBytes())));
     }
