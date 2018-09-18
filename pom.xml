@@ -6,7 +6,7 @@
 	<artifactId>utilx4j</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>${project.groupId}:${project.artifactId}</name>
-   <description></description>
+   <description>A toolbox for encryption</description>
    <url>https://gitee.com/snowlandltd/utilx4j</url>
 	<dependencies>
 		<dependency>
@@ -21,4 +21,39 @@
 	      <scope>test</scope>
 	    </dependency>
 	</dependencies>
+    <licenses>
+       <license>
+          <name>The Apache Software License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>actable</distribution>
+       </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>A.Star</name>
+            <email>astar@snowland.ltd</email>
+            <organization>Snowland Co. Ltd</organization>
+            <url>https://gitee.com/snowlandltd/utilx4j</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@gitee.com:snowlandltd/utilx4j.git</connection>
+    </scm>
+    <distributionManagement>
+        <snapshotRepository>
+          <!-- 这个id需要在setting.xml中设置  --> 
+          <id>utilx-snapshots</id>
+          <name>OSS Snapshots Repository</name>
+          <!-- 这里的url就是Issue中回复的snapshots 的repo地址--> 
+          <url>https://oss.sonatype.org/content/repositories/snapshots/</url>  
+        </snapshotRepository>
+        <repository>
+          <id>utilx-repository</id>
+          <name>OSS Staging Repository</name>
+          <!-- 这里的url就是Issue中回复的staging 的repo地址--> 
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
 </project>

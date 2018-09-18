@@ -1,6 +1,5 @@
 package ltd.snowland.security;
 
-import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

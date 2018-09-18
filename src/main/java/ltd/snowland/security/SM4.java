@@ -303,12 +303,32 @@ public class SM4 {
 	}
 
 	public byte[] encryptData_ECB(byte[] bytes) {
-		SM4_Context ctx = new SM4_Context();
-		SM4Base sm4 = new SM4Base();
+//		SM4_Context ctx = new SM4_Context();
+//		SM4Base sm4 = new SM4Base();
+//		try {
+//			return sm4.sm4_crypt_ecb(ctx, bytes);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			return null;
+//		}
+		
 		try {
-			return sm4.sm4_crypt_ecb(ctx, bytes);
+			SM4_Context ctx = new SM4_Context();
+			ctx.isPadding = true;
+			ctx.mode = SM4Base.SM4_ENCRYPT;
+
+			byte[] keyBytes;
+			if (hexString) {
+				keyBytes = NumberTool.hexStringToBytes(secretKey);
+			} else {
+				keyBytes = secretKey.getBytes();
+			}
+
+			SM4Base sm4 = new SM4Base();
+			sm4.sm4_setkey_enc(ctx, keyBytes);
+			return sm4.sm4_crypt_ecb(ctx, bytes);			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -330,21 +350,8 @@ public class SM4 {
 
 	public byte[] encryptData_ECB(String plainText, String charset) {
 		try {
-			SM4_Context ctx = new SM4_Context();
-			ctx.isPadding = true;
-			ctx.mode = SM4Base.SM4_ENCRYPT;
-
-			byte[] keyBytes;
-			if (hexString) {
-				keyBytes = NumberTool.hexStringToBytes(secretKey);
-			} else {
-				keyBytes = secretKey.getBytes();
-			}
-
-			SM4Base sm4 = new SM4Base();
-			sm4.sm4_setkey_enc(ctx, keyBytes);
-			return sm4.sm4_crypt_ecb(ctx, plainText.getBytes(charset));			
-		} catch (Exception e) {
+			return encryptData_ECB(plainText.getBytes(charset));
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return null;
 		}
