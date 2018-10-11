@@ -1,5 +1,6 @@
 package ltd.snowland.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -187,12 +188,9 @@ public class NumberTool {
 	private static final char[] DIGITS_UPPER = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
 			'E', 'F' };
 
-	public static final String[] BIN_String = { 
-			"0000","0001","0010","0011",
-			"0100","0101","0110","0111",
-			"1000","1001","1010","1011",
-			"1100","1101","1110","1111"
-			};
+	public static final String[] BIN_String = { "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000",
+			"1001", "1010", "1011", "1100", "1101", "1110", "1111" };
+
 	/**
 	 * 将字节数组转换为十六进制字符数组
 	 *
@@ -227,14 +225,7 @@ public class NumberTool {
 	 * @return 十六进制char[]
 	 */
 	protected static char[] encodeHex(byte[] data, char[] toDigits) {
-		int l = data.length;
-		char[] out = new char[l << 1];
-		// two characters form the hex value.
-		for (int i = 0, j = 0; i < l; i++) {
-			out[j++] = toDigits[(0xF0 & data[i]) >>> 4];
-			out[j++] = toDigits[0x0F & data[i]];
-		}
-		return out;
+		return encodeHexString(data, toDigits).toCharArray();
 	}
 
 	/**
@@ -271,7 +262,13 @@ public class NumberTool {
 	 * @return 十六进制String
 	 */
 	protected static String encodeHexString(byte[] data, char[] toDigits) {
-		return new String(encodeHex(data, toDigits));
+		int l = data.length;
+		StringBuffer out = new StringBuffer();
+		for (int i = 0; i < l; i++) {
+			out.append(toDigits[(0xF0 & data[i]) >>> 4]);
+			out.append(toDigits[0x0F & data[i]]);
+		}
+		return out.toString();
 	}
 
 	/**
@@ -290,18 +287,12 @@ public class NumberTool {
 			throw new RuntimeException("Odd number of characters.");
 		}
 
-		byte[] out = new byte[len >> 1];
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		// two characters form the hex value.
-		for (int i = 0, j = 0; j < len; i++) {
-			int f = toDigit(data[j], j) << 4;
-			j++;
-			f = f | toDigit(data[j], j);
-			j++;
-			out[i] = (byte) (f & 0xFF);
+		for (int i = 0; i < len; i += 2) {
+			out.write(((toDigit(data[i], i) << 4) | toDigit(data[i + 1], i + 1)) & 0xff);
 		}
-
-		return out;
+		return out.toByteArray();
 	}
 
 	/**
@@ -332,11 +323,8 @@ public class NumberTool {
 	 */
 	public static String StringToAsciiString(String content) {
 		StringBuilder result = new StringBuilder();
-		int max = content.length();
-		for (int i = 0; i < max; i++) {
-			char c = content.charAt(i);
-			String b = Integer.toHexString(c);
-			result.append(b);
+		for (char c : content.toCharArray()) {
+			result.append(Integer.toHexString(c));
 		}
 		return result.toString();
 	}
@@ -368,20 +356,7 @@ public class NumberTool {
 	 * @return 十进制数值
 	 */
 	public static int hexStringToAlgorism(String hex) {
-		hex = hex.toUpperCase();
-		int max = hex.length();
-		int result = 0;
-		for (int i = max; i > 0; i--) {
-			char c = hex.charAt(i - 1);
-			int algorism = 0;
-			if (c >= '0' && c <= '9') {
-				algorism = c - '0';
-			} else {
-				algorism = c - 55;
-			}
-			result += Math.pow(16, max - i) * algorism;
-		}
-		return result;
+		return Integer.parseInt(hex, 16);
 	}
 
 	/**
@@ -394,8 +369,8 @@ public class NumberTool {
 	public static String hexStringToBinary(String hex) {
 		hex = hex.toUpperCase();
 		StringBuffer sb = new StringBuffer();
-		for (char c: hex.toCharArray()) {
-			sb.append(BIN_String[charToByte(c)]);			
+		for (char c : hex.toCharArray()) {
+			sb.append(BIN_String[charToByte(c)]);
 		}
 		return sb.toString();
 	}
@@ -408,16 +383,16 @@ public class NumberTool {
 	 * @return 字符串
 	 */
 	public static String AsciiStringToString(String content) {
-		String result = "";
+		StringBuffer result = new StringBuffer();
 		int length = content.length() / 2;
 		for (int i = 0; i < length; i++) {
 			String c = content.substring(i * 2, i * 2 + 2);
 			int a = hexStringToAlgorism(c);
 			char b = (char) a;
 			String d = String.valueOf(b);
-			result += d;
+			result.append(d);
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**
@@ -448,9 +423,8 @@ public class NumberTool {
 	 */
 	public static String byteToString(byte[] bytearray) {
 		StringBuilder resultBuffer = new StringBuilder();
-		int length = bytearray.length;
-		for (int i = 0; i < length; i++) {
-			resultBuffer.append(bytearray[i]);
+		for (byte b : bytearray) {
+			resultBuffer.append(b);
 		}
 		return resultBuffer.toString();
 	}
@@ -463,14 +437,7 @@ public class NumberTool {
 	 * @return 十进制数值
 	 */
 	public static int binaryToAlgorism(String binary) {
-		int max = binary.length();
-		int result = 0;
-		for (int i = max; i > 0; i--) {
-			char c = binary.charAt(i - 1);
-			int algorism = c - '0';
-			result += (1 <<(max - i)) * algorism;
-		}
-		return result;
+		return Integer.parseInt(binary, 2);
 	}
 
 	/**
@@ -561,13 +528,13 @@ public class NumberTool {
 			throw new IllegalArgumentException();
 		}
 		char[] arr = hex.toCharArray();
-		byte[] b = new byte[hex.length() / 2];
-		for (int i = 0, j = 0, l = hex.length(); i < l; i++, j++) {
+		ByteArrayOutputStream b = new ByteArrayOutputStream(hex.length() / 2);
+		for (int i = 0, l = hex.length(); i < l; i++) {
 			String swap = "" + arr[i++] + arr[i];
 			int byteint = Integer.parseInt(swap, 16) & 0xFF;
-			b[j] = ((Integer)(byteint)).byteValue();
+			b.write(((Integer) (byteint)).byteValue());
 		}
-		return b;
+		return b.toByteArray();
 	}
 
 	/**
