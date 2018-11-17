@@ -119,11 +119,11 @@ public class NumberTool {
 	 * @return
 	 */
 	public static String getHexString(byte[] bytes, boolean upperCase) {
-		String ret = "";
+		StringBuffer ret = new StringBuffer();
 		for (int i = 0; i < bytes.length; i++) {
-			ret += Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1);
+			ret.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
 		}
-		return upperCase ? ret.toUpperCase() : ret;
+		return upperCase ? ret.toString().toUpperCase() : ret.toString();
 	}
 
 	/**
@@ -405,8 +405,7 @@ public class NumberTool {
 	 * @return String 转换后的十六进制字符串
 	 */
 	public static String algorismToHexString(int algorism, int maxLength) {
-		String result = "";
-		result = Integer.toHexString(algorism);
+		String result = Integer.toHexString(algorism);
 
 		if (result.length() % 2 == 1) {
 			result = "0" + result;
@@ -448,15 +447,13 @@ public class NumberTool {
 	 * @return String 对应的十六进制字符串
 	 */
 	public static String algorismToHEXString(int algorism) {
-		String result = "";
-		result = Integer.toHexString(algorism);
+		String result = Integer.toHexString(algorism);
 
 		if (result.length() % 2 == 1) {
 			result = "0" + result;
 
 		}
 		result = result.toUpperCase();
-
 		return result;
 	}
 
@@ -470,11 +467,11 @@ public class NumberTool {
 	 * @return 补充结果
 	 */
 	static public String patchHexString(String str, int maxLength) {
-		String temp = "";
+		StringBuffer sb= new StringBuffer();
 		for (int i = 0; i < maxLength - str.length(); i++) {
-			temp = "0" + temp;
+			sb.append("0");
 		}
-		str = (temp + str).substring(0, maxLength);
+		str = (sb.toString() + str).substring(0, maxLength);
 		return str;
 	}
 
