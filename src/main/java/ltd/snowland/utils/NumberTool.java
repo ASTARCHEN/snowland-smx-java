@@ -385,8 +385,8 @@ public class NumberTool {
 	public static String AsciiStringToString(String content) {
 		StringBuffer result = new StringBuffer();
 		int length = content.length() / 2;
-		for (int i = 0; i < length; i++) {
-			String c = content.substring(i * 2, i * 2 + 2);
+		for (int i = 0; i < length; i+=2) {
+			String c = content.substring(i, i + 2);
 			int a = hexStringToAlgorism(c);
 			char b = (char) a;
 			String d = String.valueOf(b);
@@ -515,48 +515,6 @@ public class NumberTool {
 		return i;
 	}
 
-	/**
-	 * 十六进制串转化为byte数组
-	 * 
-	 * @return the array of byte
-	 */
-	public static byte[] hexToByte(String hex) throws IllegalArgumentException {
-		if (hex.length() % 2 != 0) {
-			throw new IllegalArgumentException();
-		}
-		char[] arr = hex.toCharArray();
-		ByteArrayOutputStream b = new ByteArrayOutputStream(hex.length() / 2);
-		for (int i = 0, l = hex.length(); i < l; i++) {
-			String swap = "" + arr[i++] + arr[i];
-			int byteint = Integer.parseInt(swap, 16) & 0xFF;
-			b.write(((Integer) (byteint)).byteValue());
-		}
-		return b.toByteArray();
-	}
-
-	/**
-	 * 字节数组转换为十六进制字符串
-	 * 
-	 * @param b
-	 *            byte[] 需要转换的字节数组
-	 * @return String 十六进制字符串
-	 */
-	public static String byteToHex(byte b[]) {
-		if (b == null) {
-			throw new IllegalArgumentException("Argument b ( byte array ) is null! ");
-		}
-		String hs = "";
-		String stmp = "";
-		for (int n = 0; n < b.length; n++) {
-			stmp = Integer.toHexString(b[n] & 0xff);
-			if (stmp.length() == 1) {
-				hs = hs + "0" + stmp;
-			} else {
-				hs = hs + stmp;
-			}
-		}
-		return hs.toUpperCase();
-	}
 
 	public static byte[] subByte(byte[] input, int startIndex, int length) {
 		return Arrays.copyOfRange(input, startIndex, startIndex + length);

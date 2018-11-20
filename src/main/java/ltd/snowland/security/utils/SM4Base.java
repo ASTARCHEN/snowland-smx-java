@@ -119,9 +119,11 @@ public class SM4Base {
 		k[1] = MK[1] ^ (long) FK[1];
 		k[2] = MK[2] ^ (long) FK[2];
 		k[3] = MK[3] ^ (long) FK[3];
+		long item = k[1]^k[2]^k[3];
 		for (; i < 32; i++) {
-			k[(i + 4)] = (k[i] ^ sm4CalciRK(k[(i + 1)] ^ k[(i + 2)] ^ k[(i + 3)] ^ (long) CK[i]));
+			k[(i + 4)] = (k[i] ^ sm4CalciRK(item ^ (long) CK[i]));
 			SK[i] = k[(i + 4)];
+			item ^= k[i+4]^k[i+1];
 		}
 	}
 
