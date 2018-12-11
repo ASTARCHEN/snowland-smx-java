@@ -2,6 +2,14 @@ package ltd.snowland.security.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import javafx.print.Collation;
 
 public class SM4Base {
 	public static final int SM4_ENCRYPT = 1;
@@ -107,7 +115,7 @@ public class SM4Base {
 		return rk;
 	}
 
-	private void sm4_setkey(long[] SK, byte[] key) {
+	private void sm4_setkey(long[] sk, byte[] key) {
 		long[] MK = new long[4];
 		long[] k = new long[36];
 		int i = 0;
@@ -119,15 +127,15 @@ public class SM4Base {
 		k[1] = MK[1] ^ (long) FK[1];
 		k[2] = MK[2] ^ (long) FK[2];
 		k[3] = MK[3] ^ (long) FK[3];
-		long item = k[1]^k[2]^k[3];
+		long item = k[1] ^ k[2] ^ k[3];
 		for (; i < 32; i++) {
 			k[(i + 4)] = (k[i] ^ sm4CalciRK(item ^ (long) CK[i]));
-			SK[i] = k[(i + 4)];
-			item ^= k[i+4]^k[i+1];
+			sk[i] = k[(i + 4)];
+			item ^= k[i + 4] ^ k[i + 1];
 		}
 	}
 
-	private void sm4_one_round(long[] sk, byte[] input, byte[] output) {
+	private void sm4_one_round(long[] sk, final byte[] input, byte[] output) {
 		int i = 0;
 		long[] ulbuf = new long[36];
 		ulbuf[0] = GET_ULONG_BE(input, 0);
@@ -138,6 +146,7 @@ public class SM4Base {
 			ulbuf[(i + 4)] = sm4F(ulbuf[i], ulbuf[(i + 1)], ulbuf[(i + 2)], ulbuf[(i + 3)], sk[i]);
 			i++;
 		}
+
 		PUT_ULONG_BE(ulbuf[35], output, 0);
 		PUT_ULONG_BE(ulbuf[34], output, 4);
 		PUT_ULONG_BE(ulbuf[33], output, 8);
@@ -187,11 +196,14 @@ public class SM4Base {
 			throw new Exception("key error!");
 		}
 
-		int i = 0;
+		// int i = 0;
 		ctx.mode = SM4_DECRYPT;
 		sm4_setkey(ctx.sk, key);
-		for (i = 0; i < 16; i++) {
-			SWAP(ctx.sk, i);
+		// Collections.reverse(ctx.sk);
+		for (int i = 0; i < ctx.sk.length / 2; i++) {
+			ctx.sk[i] ^= ctx.sk[31 - i];
+			ctx.sk[31 - i] ^= ctx.sk[i];
+			ctx.sk[i] ^= ctx.sk[31 - i];
 		}
 	}
 
@@ -203,13 +215,12 @@ public class SM4Base {
 		if ((ctx.isPadding) && (ctx.mode == SM4_ENCRYPT)) {
 			input = padding(input, SM4_ENCRYPT);
 		}
-
+		byte[] in = new byte[16];
+		byte[] out = new byte[16];
 		int length = input.length;
 		ByteArrayInputStream bins = new ByteArrayInputStream(input);
 		ByteArrayOutputStream bous = new ByteArrayOutputStream();
 		for (; length > 0; length -= 16) {
-			byte[] in = new byte[16];
-			byte[] out = new byte[16];
 			bins.read(in);
 			sm4_one_round(ctx.sk, in, out);
 			bous.write(out);
@@ -241,12 +252,11 @@ public class SM4Base {
 		int length = input.length;
 		ByteArrayInputStream bins = new ByteArrayInputStream(input);
 		ByteArrayOutputStream bous = new ByteArrayOutputStream();
+		byte[] in = new byte[16];
+		byte[] out = new byte[16];
+		byte[] out1 = new byte[16];
 		if (ctx.mode == SM4_ENCRYPT) {
 			for (; length > 0; length -= 16) {
-				byte[] in = new byte[16];
-				byte[] out = new byte[16];
-				byte[] out1 = new byte[16];
-
 				bins.read(in);
 				for (i = 0; i < 16; i++) {
 					out[i] = ((byte) (in[i] ^ iv[i]));
@@ -258,14 +268,10 @@ public class SM4Base {
 		} else {
 			byte[] temp = new byte[16];
 			for (; length > 0; length -= 16) {
-				byte[] in = new byte[16];
-				byte[] out = new byte[16];
-				byte[] out1 = new byte[16];
-
 				bins.read(in);
 				System.arraycopy(in, 0, temp, 0, 16);
 				sm4_one_round(ctx.sk, in, out);
-				for (i = 0; i < 16; i++) {
+				for (i = 0; i < 16; ++i) {
 					out1[i] = ((byte) (out[i] ^ iv[i]));
 				}
 				System.arraycopy(temp, 0, iv, 0, 16);
@@ -281,4 +287,186 @@ public class SM4Base {
 		bous.close();
 		return output;
 	}
+
+	public byte[] sm4_crypt_pcbc(SM4_Context ctx, byte[] iv, byte[] input) throws Exception {
+		if (iv == null || iv.length != 16) {
+			throw new Exception("iv error!");
+		}
+
+		if (input == null) {
+			throw new Exception("input is null!");
+		}
+
+		if (ctx.isPadding && ctx.mode == SM4_ENCRYPT) {
+			input = padding(input, SM4_ENCRYPT);
+		}
+
+		int i = 0;
+		int length = input.length;
+		ByteArrayInputStream bins = new ByteArrayInputStream(input);
+		ByteArrayOutputStream bous = new ByteArrayOutputStream();
+		byte[] in = new byte[16];
+		byte[] out = new byte[16];
+		byte[] out1 = new byte[16];
+		
+		if (ctx.mode == SM4_ENCRYPT) {
+			for (; length > 0; length -= 16) {
+				
+				bins.read(in);
+				for (i = 0; i < 16; i++) {
+					out[i] = ((byte) (in[i] ^ iv[i]));
+				}
+				sm4_one_round(ctx.sk, out, out1);
+				for (i = 0; i < 16; i++) {
+					iv[i] = ((byte) (out1[i] ^ in[i]));
+				}
+				bous.write(out1);
+			}
+		} else {
+			for (; length > 0; length -= 16) {
+				bins.read(in);
+				sm4_one_round(ctx.sk, in, out);
+				for (i = 0; i < 16; ++i) {
+					out1[i] = ((byte) (out[i] ^ iv[i]));
+					iv[i] = ((byte) (out1[i] ^ in[i]));
+				}
+				bous.write(out1);
+			}
+		}
+
+		byte[] output = bous.toByteArray();
+		if (ctx.isPadding && ctx.mode == SM4_DECRYPT) {
+			output = padding(output, SM4_DECRYPT);
+		}
+		bins.close();
+		bous.close();
+		return output;
+	}
+
+	public byte[] sm4_crypt_cfb(SM4_Context ctx, byte[] iv, byte[] input) throws Exception {
+		if (iv == null || iv.length != 16) {
+			throw new Exception("iv error!");
+		}
+
+		if (input == null) {
+			throw new Exception("input is null!");
+		}
+
+		int length = input.length;
+		ByteArrayInputStream bins = new ByteArrayInputStream(input);
+		ByteArrayOutputStream bous = new ByteArrayOutputStream();
+		byte[] in = new byte[16];
+		byte[] out = new byte[16];
+		byte[] out1 = new byte[16];
+		
+		if (ctx.mode == SM4_ENCRYPT) {
+			for (int i = 0; length > 0; length -= 16) {
+				
+				bins.read(in);
+				sm4_one_round(ctx.sk, iv, out1);
+				for (i = 0; i < 16; i++) {
+					iv[i] = ((byte) (out1[i] ^ in[i]));
+				}
+				bous.write(iv);
+			}
+			byte[] output = bous.toByteArray();
+			bins.close();
+			bous.close();
+			return output;
+		} else {
+			
+			ctx.mode = SM4_ENCRYPT;
+			for(int i = 0; i < ctx.sk.length / 2; ++i) {
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+				ctx.sk[ctx.sk.length -1 - i] ^= ctx.sk[i];
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+			}
+			
+			for (int i= 0; length > 0; length -= 16) {
+				bins.read(in);
+				sm4_one_round(ctx.sk, iv, out);
+				for (i = 0; i < 16; ++i) {
+					out1[i] = ((byte) (out[i] ^ in[i]));
+				}
+				System.arraycopy(in, 0, iv, 0, 16);
+				bous.write(out1);
+			}
+
+			ctx.mode = SM4_DECRYPT;
+			for(int i = 0; i < ctx.sk.length / 2; ++i) {
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+				ctx.sk[ctx.sk.length -1 - i] ^= ctx.sk[i];
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+			}
+			byte[] output = bous.toByteArray();
+			bins.close();
+			bous.close();
+			return output;
+		}
+	}
+
+	public byte[] sm4_crypt_ofb(SM4_Context ctx, byte[] iv, byte[] input) throws Exception {
+		if (iv == null || iv.length != 16) {
+			throw new Exception("iv error!");
+		}
+
+		if (input == null) {
+			throw new Exception("input is null!");
+		}
+
+		int length = input.length;
+		ByteArrayInputStream bins = new ByteArrayInputStream(input);
+		ByteArrayOutputStream bous = new ByteArrayOutputStream();
+		byte[] in = new byte[16];
+		byte[] out = new byte[16];
+		byte[] out1 = new byte[16];
+		
+		if (ctx.mode == SM4_ENCRYPT) {
+			for (int i = 0; length > 0; length -= 16) {
+				
+				bins.read(in);
+				sm4_one_round(ctx.sk, iv, out1);
+				System.arraycopy(out1, 0, iv, 0, 16);
+				for (i = 0; i < 16; i++) {
+					out[i] = ((byte) (out1[i] ^ in[i]));
+				}
+				bous.write(out);
+			}
+			byte[] output = bous.toByteArray();
+			bins.close();
+			bous.close();
+			return output;
+		} else {
+			
+			ctx.mode = SM4_ENCRYPT;
+			for(int i = 0; i < ctx.sk.length / 2; ++i) {
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+				ctx.sk[ctx.sk.length -1 - i] ^= ctx.sk[i];
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+			}
+			
+			for (int i= 0; length > 0; length -= 16) {
+				bins.read(in);
+				sm4_one_round(ctx.sk, iv, out);
+				for (i = 0; i < 16; ++i) {
+					out1[i] = ((byte) (out[i] ^ in[i]));
+				}
+				System.arraycopy(out, 0, iv, 0, 16);
+				bous.write(out1);
+			}
+
+			ctx.mode = SM4_DECRYPT;
+			for(int i = 0; i < ctx.sk.length / 2; ++i) {
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+				ctx.sk[ctx.sk.length -1 - i] ^= ctx.sk[i];
+				ctx.sk[i] ^= ctx.sk[ctx.sk.length -1 - i];
+			}
+			byte[] output = bous.toByteArray();
+			bins.close();
+			bous.close();
+			return output;
+		}
+	}
+
+
 }

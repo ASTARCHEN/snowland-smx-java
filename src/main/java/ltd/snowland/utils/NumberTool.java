@@ -1,6 +1,9 @@
 package ltd.snowland.utils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 
@@ -427,7 +430,24 @@ public class NumberTool {
 		}
 		return resultBuffer.toString();
 	}
-
+	/**
+	 * 字节数组转为普通字符串（ASCII对应的字符）
+	 * 
+	 * @param bytearray
+	 *            InputStream
+	 * @return String
+	 */
+	public static String byteToString(InputStream bytearray) {
+		StringBuilder resultBuffer = new StringBuilder();
+		try {
+			for(byte b : bytearray.readAllBytes()) {
+				resultBuffer.append(b);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return resultBuffer.toString();
+	}
 	/**
 	 * 二进制字符串转十进制
 	 * 

@@ -7,10 +7,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import ltd.snowland.utils.NumberTool;
-import ltd.snowland.utils.StreamTool;
 
 /**
  * SM3杂凑算法实现
@@ -105,8 +107,9 @@ public class SM3 {
 		byte[] b;
 		byte[] vi = IV.toByteArray();
 		byte[] vi1 = null;
-		for (int i = 0; i < n; i++) {
-			b = Arrays.copyOfRange(m1, i * 64, (i + 1) * 64);
+
+		for (int i = 0; i < n; i += 64) {
+			b = Arrays.copyOfRange(m1, i, i + 64);
 			vi1 = CF(vi, b);
 			vi = vi1;
 		}
@@ -119,8 +122,9 @@ public class SM3 {
 
 	public static byte[] hash(File file) throws Exception {
 		if (file.exists()) {
+			@SuppressWarnings("resource")
 			InputStream inStream = new FileInputStream(file);
-			return hash(StreamTool.readInputStream2ByteArray(inStream));
+			return hash(inStream.readAllBytes());
 		} else {
 			throw new FileNotFoundException();
 		}
@@ -137,24 +141,24 @@ public class SM3 {
 		g = toInteger(vi, 6);
 		h = toInteger(vi, 7);
 
-		int[] w = new int[68];
+		List<Integer> w = new ArrayList<Integer>();
 		int[] w1 = new int[64];
 		for (int i = 0; i < 16; i++) {
-			w[i] = toInteger(bi, i);
+			w.add(toInteger(bi, i));
 		}
 		for (int j = 16; j < 68; j++) {
-			w[j] = P1(w[j - 16] ^ w[j - 9] ^ Integer.rotateLeft(w[j - 3], 15)) ^ Integer.rotateLeft(w[j - 13], 7)
-					^ w[j - 6];
+			w.add(P1(w.get(j - 16) ^ w.get(j - 9) ^ Integer.rotateLeft(w.get(j - 3), 15)) ^ Integer.rotateLeft(w.get(j - 13), 7)
+					^ w.get(j - 6));
 		}
 		for (int j = 0; j < 64; j++) {
-			w1[j] = w[j] ^ w[j + 4];
+			w1[j] = w.get(j) ^ w.get(j + 4);
 		}
 		int ss1, ss2, tt1, tt2;
 		for (int j = 0; j < 64; j++) {
 			ss1 = Integer.rotateLeft(Integer.rotateLeft(a, 12) + e + Integer.rotateLeft(T(j), j), 7);
 			ss2 = ss1 ^ Integer.rotateLeft(a, 12);
 			tt1 = FF(a, b, c, j) + d + ss2 + w1[j];
-			tt2 = GG(e, f, g, j) + h + ss1 + w[j];
+			tt2 = GG(e, f, g, j) + h + ss1 + w.get(j);
 			d = c;
 			c = Integer.rotateLeft(b, 9);
 			b = a;
@@ -172,7 +176,7 @@ public class SM3 {
 	}
 
 	private static int toInteger(byte[] source, int index) {
-		StringBuilder valueStr = new StringBuilder("");
+		StringBuilder valueStr = new StringBuilder();
 		for (int i = 0; i < 4; i++) {
 			valueStr.append(hexDigits[(byte) ((source[index * 4 + i] & 0xF0) >> 4)]);
 			valueStr.append(hexDigits[(byte) (source[index * 4 + i] & 0x0F)]);
@@ -191,6 +195,8 @@ public class SM3 {
 		baos.write(toByteArray(f));
 		baos.write(toByteArray(g));
 		baos.write(toByteArray(h));
+		
+		
 		return baos.toByteArray();
 	}
 
@@ -203,26 +209,9 @@ public class SM3 {
 		return byteArray;
 	}
 
-	private static String byteToHexString(byte b) {
-		int n = b;
-		if (n < 0)
-			n = 256 + n;
-		int d1 = n / 16;
-		int d2 = n % 16;
-		return "" + hexDigits[d1] + hexDigits[d2];
-	}
-
-	public static String byteArrayToHexString(byte[] b) {
-		StringBuffer resultSb = new StringBuffer();
-		for (int i = 0; i < b.length; i++) {
-			resultSb.append(byteToHexString(b[i]));
-		}
-		return resultSb.toString();
-	}
-
 	public static String hashHex(byte[] b) {
 		try {
-			return SM3.byteArrayToHexString(SM3.hash(b));
+			return NumberTool.encodeHexString(SM3.hash(b));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -234,6 +223,6 @@ public class SM3 {
 	}
 
 	public static void main(String[] args) throws IOException {
-		System.out.println(SM3.byteArrayToHexString(SM3.hash("abc".getBytes())));
+		System.out.println(NumberTool.encodeHexString(SM3.hash("abc".getBytes())));
 	}
 }

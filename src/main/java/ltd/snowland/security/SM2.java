@@ -21,7 +21,7 @@ import org.bouncycastle.math.ec.ECPoint;
 
 import ltd.snowland.security.utils.SM2KeyPair;
 import ltd.snowland.utils.StreamTool;
-
+import ltd.snowland.utils.NumberTool;
 /**
  * SM2公钥加密算法实现 包括 -签名,验签 -密钥交换 -公钥加密,私钥解密
  * 
@@ -65,14 +65,7 @@ public class SM2 {
 	 * @param b
 	 */
 	public static void printHexString(byte[] b) {
-		for (int i = 0; i < b.length; i++) {
-			String hex = Integer.toHexString(b[i] & 0xFF);
-			if (hex.length() == 1) {
-				hex = '0' + hex;
-			}
-			System.out.print(hex.toUpperCase());
-		}
-		System.out.println();
+		System.out.println(NumberTool.byteToString(b));	
 	}
 
 	/**
@@ -102,8 +95,8 @@ public class SM2 {
 	 * @return
 	 */
 	private boolean allZero(byte[] buffer) {
-		for (int i = 0; i < buffer.length; i++) {
-			if (buffer[i] != 0)
+		for (byte b: buffer) {
+			if (b != 0)
 				return false;
 		}
 		return true;
