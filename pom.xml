@@ -4,10 +4,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ltd.snowland</groupId>
 	<artifactId>utilx4j</artifactId>
-	<version>0.0.1</version>
+	<version>0.1.0</version>
 	<name>${project.groupId}:${project.artifactId}</name>
    <description>A toolbox for encryption</description>
    <url>https://gitee.com/snowlandltd/utilx4j</url>
+    <properties>
+        <java.version>8</java.version>
+    </properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

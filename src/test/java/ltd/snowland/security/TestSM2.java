@@ -29,8 +29,12 @@ public class TestSM2 {
 		 SM2KeyPair keyPair = sm02.generateKeyPair();
 		 ECPoint publicKey=keyPair.getPublicKey();
 		 BigInteger privateKey=keyPair.getPrivateKey();
-		 sm02.exportPublicKey(publicKey, "E:/publickey.pem");
-		 sm02.exportPrivateKey(privateKey, "E:/privatekey.pem");
+//		 sm02.exportPublicKey(publicKey, "E:/publickey.pem");
+//		 sm02.exportPrivateKey(privateKey, "E:/privatekey.pem");
+		System.out.println("ECPoint:");
+		System.out.println(publicKey);
+		System.out.println("BigInteger:");
+		System.out.println(privateKey);
 
 		System.out.println("-----------------公钥加密与解密-----------------");
 //		ECPoint publicKey = sm02.importPublicKey("E:/publickey.pem");
@@ -41,7 +45,7 @@ public class TestSM2 {
 		System.out.println("解密后明文:" + sm02.decrypt(data, privateKey));
 
 		System.out.println("-----------------签名与验签-----------------");
-		String IDA = "Heartbeats";
+		String IDA = "";
 		String M = "要签名的信息";
 		Signature signature = sm02.sign(M, IDA, new SM2KeyPair(publicKey, privateKey));
 		System.out.println("用户标识:" + IDA);
